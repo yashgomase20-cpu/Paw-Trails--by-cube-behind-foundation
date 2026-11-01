@@ -5,7 +5,7 @@ const getAllAnimals = async (req, res, next) => {
   try {
     const { status } = req.query;
 
-    let items = db.find('animals');
+    let items = await db.find('animals');
 
     if (status && status !== 'all') {
       items = items.filter(animal => animal.status === status);
@@ -24,7 +24,7 @@ const getAllAnimals = async (req, res, next) => {
 // Get animal by ID (public)
 const getAnimalById = async (req, res, next) => {
   try {
-    const animal = db.findById('animals', req.params.id);
+    const animal = await db.findById('animals', req.params.id);
     if (!animal) {
       return res.status(404).json({
         success: false,
@@ -63,9 +63,13 @@ const createAnimal = async (req, res, next) => {
       });
     }
 
-    const animalId = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    const existing = db.findById('animals', animalId);
-    const finalId = existing ? `${animalId}-${Date.now().toString().slice(-4)}` : animalId;
+    // Generate unique slug id from name
+    const baseSlug = name.trim().toLowerCase().replace(/[^a-z0-9]/g, '-');
+    let animalId = baseSlug;
+    const existing = await db.findById('animals', animalId);
+    if (existing) {
+      animalId = `${baseSlug}-${Date.now().toString().slice(-4)}`;
+    }
 
     let imageUrl = 'images/dog-care.jpg';
     if (req.file) {
@@ -82,8 +86,8 @@ const createAnimal = async (req, res, next) => {
 
     const validStatus = statusMap[status] ? status : 'available';
 
-    const newAnimal = db.insert('animals', {
-      id: finalId,
+    const newAnimal = await db.insert('animals', {
+      id: animalId,
       name: name.trim(),
       status: validStatus,
       statusDisplay: statusMap[validStatus],
@@ -111,7 +115,7 @@ const createAnimal = async (req, res, next) => {
 // Update animal profile (admin only)
 const updateAnimal = async (req, res, next) => {
   try {
-    const animal = db.findById('animals', req.params.id);
+    const animal = await db.findById('animals', req.params.id);
     if (!animal) {
       return res.status(404).json({
         success: false,
@@ -136,7 +140,7 @@ const updateAnimal = async (req, res, next) => {
       }
     }
 
-    const updated = db.updateById('animals', req.params.id, updates);
+    const updated = await db.updateById('animals', req.params.id, updates);
 
     res.json({
       success: true,
@@ -151,7 +155,7 @@ const updateAnimal = async (req, res, next) => {
 // Delete animal (admin only)
 const deleteAnimal = async (req, res, next) => {
   try {
-    const deleted = db.deleteById('animals', req.params.id);
+    const deleted = await db.deleteById('animals', req.params.id);
     if (!deleted) {
       return res.status(404).json({
         success: false,

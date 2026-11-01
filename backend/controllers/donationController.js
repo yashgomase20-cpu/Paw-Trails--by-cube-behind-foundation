@@ -12,7 +12,7 @@ const createDonation = async (req, res, next) => {
       });
     }
 
-    const donation = db.insert('donations', {
+    const donation = await db.insert('donations', {
       donorName: donorName ? donorName.trim() : 'Kind Supporter',
       email: email ? email.trim().toLowerCase() : '',
       phone: phone ? phone.trim() : '',
@@ -37,7 +37,7 @@ const createDonation = async (req, res, next) => {
 // Get all donations (admin only)
 const getAllDonations = async (req, res, next) => {
   try {
-    const donations = db.find('donations');
+    const donations = await db.find('donations');
     const totalAmount = donations.reduce(
       (sum, d) => sum + (Number(d.amount) || 0),
       0

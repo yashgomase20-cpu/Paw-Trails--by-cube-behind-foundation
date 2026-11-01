@@ -19,7 +19,7 @@ const createContact = async (req, res, next) => {
       });
     }
 
-    const contact = db.insert('contacts', {
+    const contact = await db.insert('contacts', {
       fullName: fullName.trim(),
       email: email.trim().toLowerCase(),
       subject: (subject || 'General Inquiry').trim(),
@@ -43,7 +43,7 @@ const getAllContacts = async (req, res, next) => {
   try {
     const { status } = req.query;
 
-    let items = db.find('contacts');
+    let items = await db.find('contacts');
 
     if (status && status !== 'all') {
       items = items.filter(item => item.status === status);
@@ -76,7 +76,7 @@ const updateContactStatus = async (req, res, next) => {
     if (status) updates.status = status;
     if (adminNotes !== undefined) updates.adminNotes = adminNotes;
 
-    const updated = db.updateById('contacts', req.params.id, updates);
+    const updated = await db.updateById('contacts', req.params.id, updates);
     if (!updated) {
       return res.status(404).json({
         success: false,
@@ -97,7 +97,7 @@ const updateContactStatus = async (req, res, next) => {
 // Delete contact
 const deleteContact = async (req, res, next) => {
   try {
-    const deleted = db.deleteById('contacts', req.params.id);
+    const deleted = await db.deleteById('contacts', req.params.id);
     if (!deleted) {
       return res.status(404).json({
         success: false,

@@ -448,7 +448,11 @@
      10. FORM VALIDATION
   ===================================================================== */
 
-  const BACKEND_API = window.PAW_TRAILS_API_URL || "http://localhost:5000/api";
+  const BACKEND_API = window.PAW_TRAILS_API_URL || (
+    window.location.protocol === 'file:' || ['5500', '3000', '8080'].includes(window.location.port)
+      ? "http://localhost:5000/api"
+      : "/api"
+  );
 
   function initForms() {
     setupForm("adoptionForm", "adoptFormStatus");
@@ -959,7 +963,9 @@
               name: animal.name,
               status: animal.statusDisplay || animal.status,
               location: animal.location || "Pune",
-              image: (animal.image && animal.image.startsWith("/")) ? "http://localhost:5000" + animal.image : animal.image,
+              image: (animal.image && animal.image.startsWith("/"))
+                ? (window.location.protocol === 'file:' || ['5500', '3000', '8080'].includes(window.location.port) ? "http://localhost:5000" + animal.image : animal.image)
+                : animal.image,
               story: animal.story
             };
           });

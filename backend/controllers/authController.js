@@ -15,7 +15,7 @@ const login = async (req, res, next) => {
       });
     }
 
-    const admin = db.getAdmin();
+    const admin = await db.getAdmin();
     const identifier = (username || email).toLowerCase().trim();
 
     const matchesIdentifier =
@@ -63,7 +63,7 @@ const login = async (req, res, next) => {
 // Get current logged in user
 const getMe = async (req, res, next) => {
   try {
-    const admin = db.getAdmin();
+    const admin = await db.getAdmin();
     res.json({
       success: true,
       admin: {
@@ -98,7 +98,7 @@ const updatePassword = async (req, res, next) => {
       });
     }
 
-    const admin = db.getAdmin();
+    const admin = await db.getAdmin();
     const isMatch = await bcrypt.compare(currentPassword, admin.password);
     if (!isMatch) {
       return res.status(400).json({
@@ -108,8 +108,8 @@ const updatePassword = async (req, res, next) => {
     }
 
     const salt = await bcrypt.genSalt(10);
-    admin.password = await bcrypt.hash(newPassword, salt);
-    db.save();
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    await db.updateAdmin({ password: hashedPassword });
 
     res.json({
       success: true,

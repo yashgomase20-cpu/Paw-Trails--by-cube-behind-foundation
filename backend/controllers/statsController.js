@@ -3,7 +3,7 @@ const db = require('../config/db');
 // Get public impact stats
 const getStats = async (req, res, next) => {
   try {
-    const stats = db.getStats();
+    const stats = await db.getStats();
     res.json({
       success: true,
       data: stats
@@ -16,13 +16,13 @@ const getStats = async (req, res, next) => {
 // Get aggregated admin dashboard metrics (admin only)
 const getAdminDashboardSummary = async (req, res, next) => {
   try {
-    const stats = db.getStats();
-    const adoptions = db.find('adoptions');
-    const reports = db.find('reports');
-    const volunteers = db.find('volunteers');
-    const contacts = db.find('contacts');
-    const animals = db.find('animals');
-    const donations = db.find('donations');
+    const stats = await db.getStats();
+    const adoptions = await db.find('adoptions');
+    const reports = await db.find('reports');
+    const volunteers = await db.find('volunteers');
+    const contacts = await db.find('contacts');
+    const animals = await db.find('animals');
+    const donations = await db.find('donations');
 
     const totalDonationAmount = donations.reduce(
       (sum, d) => sum + (Number(d.amount) || 0),
@@ -84,7 +84,7 @@ const updateStats = async (req, res, next) => {
     if (successfulAdoptions !== undefined) updates.successfulAdoptions = Number(successfulAdoptions);
     if (volunteersCount !== undefined) updates.volunteersCount = Number(volunteersCount);
 
-    const updated = db.updateStats(updates);
+    const updated = await db.updateStats(updates);
 
     res.json({
       success: true,

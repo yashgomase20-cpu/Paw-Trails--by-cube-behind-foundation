@@ -30,7 +30,7 @@ const createAdoption = async (req, res, next) => {
       });
     }
 
-    const application = db.insert('adoptions', {
+    const application = await db.insert('adoptions', {
       fullName: fullName.trim(),
       email: email.trim().toLowerCase(),
       phone: phone.trim(),
@@ -59,7 +59,7 @@ const getAllAdoptions = async (req, res, next) => {
   try {
     const { status, search } = req.query;
 
-    let items = db.find('adoptions');
+    let items = await db.find('adoptions');
 
     if (status && status !== 'all') {
       items = items.filter(item => item.status === status);
@@ -90,7 +90,7 @@ const getAllAdoptions = async (req, res, next) => {
 // Get single application
 const getAdoptionById = async (req, res, next) => {
   try {
-    const item = db.findById('adoptions', req.params.id);
+    const item = await db.findById('adoptions', req.params.id);
     if (!item) {
       return res.status(404).json({
         success: false,
@@ -123,7 +123,7 @@ const updateAdoptionStatus = async (req, res, next) => {
     if (status) updates.status = status;
     if (adminNotes !== undefined) updates.adminNotes = adminNotes;
 
-    const updated = db.updateById('adoptions', req.params.id, updates);
+    const updated = await db.updateById('adoptions', req.params.id, updates);
 
     if (!updated) {
       return res.status(404).json({
@@ -134,8 +134,8 @@ const updateAdoptionStatus = async (req, res, next) => {
 
     // If marked approved, increment impact stats
     if (status === 'approved') {
-      const stats = db.getStats();
-      db.updateStats({ successfulAdoptions: (stats.successfulAdoptions || 0) + 1 });
+      const stats = await db.getStats();
+      await db.updateStats({ successfulAdoptions: (stats.successfulAdoptions || 0) + 1 });
     }
 
     res.json({
@@ -151,7 +151,7 @@ const updateAdoptionStatus = async (req, res, next) => {
 // Delete application
 const deleteAdoption = async (req, res, next) => {
   try {
-    const deleted = db.deleteById('adoptions', req.params.id);
+    const deleted = await db.deleteById('adoptions', req.params.id);
     if (!deleted) {
       return res.status(404).json({
         success: false,

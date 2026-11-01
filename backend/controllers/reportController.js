@@ -33,7 +33,7 @@ const createReport = async (req, res, next) => {
       imageUrl = `/uploads/${req.file.filename}`;
     }
 
-    const report = db.insert('reports', {
+    const report = await db.insert('reports', {
       fullName: fullName.trim(),
       phone: phone.trim(),
       email: email ? email.trim().toLowerCase() : '',
@@ -61,7 +61,7 @@ const getAllReports = async (req, res, next) => {
   try {
     const { status, condition } = req.query;
 
-    let items = db.find('reports');
+    let items = await db.find('reports');
 
     if (status && status !== 'all') {
       items = items.filter(item => item.status === status);
@@ -84,7 +84,7 @@ const getAllReports = async (req, res, next) => {
 // Get report by ID
 const getReportById = async (req, res, next) => {
   try {
-    const item = db.findById('reports', req.params.id);
+    const item = await db.findById('reports', req.params.id);
     if (!item) {
       return res.status(404).json({
         success: false,
@@ -113,7 +113,7 @@ const updateReportStatus = async (req, res, next) => {
       });
     }
 
-    const current = db.findById('reports', req.params.id);
+    const current = await db.findById('reports', req.params.id);
     if (!current) {
       return res.status(404).json({
         success: false,
@@ -125,12 +125,12 @@ const updateReportStatus = async (req, res, next) => {
     if (status) updates.status = status;
     if (adminNotes !== undefined) updates.adminNotes = adminNotes;
 
-    const updated = db.updateById('reports', req.params.id, updates);
+    const updated = await db.updateById('reports', req.params.id, updates);
 
     // If newly marked as rescued, update impact stats
     if (status === 'rescued' && current.status !== 'rescued') {
-      const stats = db.getStats();
-      db.updateStats({ animalsRescued: (stats.animalsRescued || 0) + 1 });
+      const stats = await db.getStats();
+      await db.updateStats({ animalsRescued: (stats.animalsRescued || 0) + 1 });
     }
 
     res.json({
@@ -146,7 +146,7 @@ const updateReportStatus = async (req, res, next) => {
 // Delete report
 const deleteReport = async (req, res, next) => {
   try {
-    const deleted = db.deleteById('reports', req.params.id);
+    const deleted = await db.deleteById('reports', req.params.id);
     if (!deleted) {
       return res.status(404).json({
         success: false,

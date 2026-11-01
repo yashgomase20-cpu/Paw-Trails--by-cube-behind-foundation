@@ -1,15 +1,27 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
 
-const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
+const UPLOADS_DIR = process.env.VERCEL
+  ? path.join(os.tmpdir(), 'uploads')
+  : path.join(__dirname, '..', 'uploads');
 
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  }
+} catch (e) {
+  // Silent fail if directory already exists or read-only
 }
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
+    try {
+      if (!fs.existsSync(UPLOADS_DIR)) {
+        fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+      }
+    } catch (e) {}
     cb(null, UPLOADS_DIR);
   },
   filename: function (req, file, cb) {

@@ -21,7 +21,7 @@ const createVolunteer = async (req, res, next) => {
       });
     }
 
-    const volunteer = db.insert('volunteers', {
+    const volunteer = await db.insert('volunteers', {
       fullName: fullName.trim(),
       phone: phone.trim(),
       email: email.trim().toLowerCase(),
@@ -49,7 +49,7 @@ const getAllVolunteers = async (req, res, next) => {
   try {
     const { status, activity } = req.query;
 
-    let items = db.find('volunteers');
+    let items = await db.find('volunteers');
 
     if (status && status !== 'all') {
       items = items.filter(item => item.status === status);
@@ -82,7 +82,7 @@ const updateVolunteerStatus = async (req, res, next) => {
       });
     }
 
-    const current = db.findById('volunteers', req.params.id);
+    const current = await db.findById('volunteers', req.params.id);
     if (!current) {
       return res.status(404).json({
         success: false,
@@ -94,12 +94,12 @@ const updateVolunteerStatus = async (req, res, next) => {
     if (status) updates.status = status;
     if (adminNotes !== undefined) updates.adminNotes = adminNotes;
 
-    const updated = db.updateById('volunteers', req.params.id, updates);
+    const updated = await db.updateById('volunteers', req.params.id, updates);
 
     // If confirmed and wasn't before, update volunteers count
     if (status === 'confirmed' && current.status !== 'confirmed') {
-      const stats = db.getStats();
-      db.updateStats({ volunteersCount: (stats.volunteersCount || 0) + (current.numberOfPeople || 1) });
+      const stats = await db.getStats();
+      await db.updateStats({ volunteersCount: (stats.volunteersCount || 0) + (current.numberOfPeople || 1) });
     }
 
     res.json({
@@ -115,7 +115,7 @@ const updateVolunteerStatus = async (req, res, next) => {
 // Delete volunteer
 const deleteVolunteer = async (req, res, next) => {
   try {
-    const deleted = db.deleteById('volunteers', req.params.id);
+    const deleted = await db.deleteById('volunteers', req.params.id);
     if (!deleted) {
       return res.status(404).json({
         success: false,
